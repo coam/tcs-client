@@ -1,0 +1,30 @@
+image: "rust:latest"
+cache:
+  paths:
+    - target/
+
+stages:
+  - test
+  - publish
+
+tests:
+  before_script:
+    - "chmod u+x ./ci-setup.sh"
+    - "./ci-setup.sh"
+  stage: test
+  environment:
+    name: test
+  script:
+    - "cargo test -- --nocapture"
+  only:
+    - master
+
+cratesio:
+  stage: publish
+  environment:
+    name: cratesio
+  script:
+    - cargo login $CARGO_TOKEN
+    - cargo publish
+  only:
+    - prod
