@@ -9,11 +9,11 @@ Implement base on [this code](https://github.com/tencentyun/tls-sig-api-python)
 ## Usage
 
 ```rust
-use tcs_client::TlsSigApiVer2;
+use tcs_client::TencentCloudApi;
 use chrono::Duration;
 
 let mock_key = "5bd2850fff3ecb11d7c805251c51ee463a25727bddc2385f3fa8bfee1bb93b5e";
-let signer = TlsSigApiVer2::new(0, mock_key);
+let signer = TencentCloudApi::new(0, mock_key);
 
 let identifier = "10086";
 let expire = Duration::hours(2);

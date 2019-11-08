@@ -4,7 +4,7 @@ use log::*;
 use rand::prelude::*;
 use reqwest::Client;
 use std::collections::HashMap;
-use tcs_client::TlsSigApiVer2;
+use tcs_client::TencentCloudApi;
 
 #[test]
 fn check_generated_sig_correctness() {
@@ -13,26 +13,26 @@ fn check_generated_sig_correctness() {
     let env = dotenv().expect("Error occurs when processing .dotenv file!");
     trace!("Environments loaded from {:?}.", env);
 
-    let appid = var("TEST_APPID")
-        .map(|id_str| id_str.parse::<u64>().expect("Appid ParseError: Not a Int!"))
-        .expect("No test appid configured!");
-    let key = var("TEST_APP_KEY").expect("No test app key configured!");
+    let app_id = var("TEST_APP_ID").map(|id_str| id_str.parse::<u64>().expect("Appid ParseError: Not a Int!")).expect("No test app_id configured!");
+    let secret_id = var("TEST_APP_SECRET_ID").expect("No test app secret_id configured!");
+    let secret_key = var("TEST_APP_SECRET_KEY").expect("No test app secret_key configured!");
     let admin = var("TEST_APP_ADMIN").expect("No test app administrator configured!");
 
     trace!(
-        "Test Environments got: appid: {}, appkey: {}, admin: {}.",
-        appid,
-        key,
+        "Test Environments got: app_id: {}, secret_id: {}, secret_key: {}, admin: {}.",
+        app_id,
+        secret_id,
+        secret_key,
         admin
     );
-    let sig_api = TlsSigApiVer2::new(appid, &key);
+    let sig_api = TencentCloudApi::new(app_id, &secret_id, &secret_key);
 
     let admin_sig = sig_api.gen_sign(&admin, Duration::hours(10), None);
     trace!("generated admin_sig: {}", admin_sig);
 
     let r = random::<u32>();
 
-    let url = format!("https://console.tim.qq.com/v4/im_open_login_svc/account_import?sdkappid={}&identifier={}&usersig={}&random={}&contenttype=json", appid, admin, admin_sig, r).to_string();
+    let url = format!("https://console.tim.qq.com/v4/im_open_login_svc/account_import?sdkapp_id={}&identifier={}&usersig={}&random={}&contenttype=json", app_id, admin, admin_sig, r).to_string();
     trace!("concated url: {}", url);
 
     let mut map = HashMap::new();
