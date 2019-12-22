@@ -37,7 +37,7 @@ fn load_response(response: &mut reqwest::Response) -> Result<String, Box<dyn Err
 }
 
 // DNS 解析记录
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct TcsData {
     pub tcs_region: String,
     pub instance_name: String,
