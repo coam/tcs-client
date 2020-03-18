@@ -39,6 +39,7 @@ fn load_response(response: &mut reqwest::Response) -> Result<String, Box<dyn Err
 // DNS 解析记录
 #[derive(Deserialize, Debug, Clone)]
 pub struct TcsData {
+    pub tcs_title: String,
     pub tcs_region: String,
     pub tcs_zone: String,
     pub host_name: String,
@@ -63,21 +64,25 @@ pub struct TcsInfo {
 #[derive(Deserialize, Debug, Clone)]
 pub struct TcsResponse {
     #[serde(rename = "Response")]
-    pub response: TcsResponseBase,
+    pub response: Value,
 }
 
 // DNS 解析记录
 #[derive(Deserialize, Debug, Clone)]
-pub struct TcsResponseBase {
+pub struct TcsResponseError {
     #[serde(rename = "RequestId")]
     pub request_id: String,
+    #[serde(rename = "Error")]
+    pub error: TcsApiError,
 }
 
 // DNS 解析记录
 #[derive(Deserialize, Debug, Clone)]
-pub struct TcsResponseZoneInstanceConfigInfos {
-    #[serde(rename = "Response")]
-    pub response: TcsResponseZoneInstanceConfig,
+pub struct TcsApiError {
+    #[serde(rename = "Code")]
+    pub code: String,
+    #[serde(rename = "Message")]
+    pub message: String,
 }
 
 // DNS 解析记录
@@ -120,16 +125,29 @@ pub struct TcsInstanceTypeQuotaPrice {
     #[serde(rename = "UnitPriceDiscount")]
     pub unit_price_discount: f32,
     #[serde(rename = "Discount")]
-    pub discount: i8,
+    pub discount: String,
     #[serde(rename = "ChargeUnit")]
     pub charge_unit: String,
 }
 
 // DNS 解析记录
 #[derive(Deserialize, Debug, Clone)]
-pub struct TcsResponseDescribeInstanceBase {
-    #[serde(rename = "Response")]
-    pub response: TcsResponseDescribeInstance,
+pub struct TcsResponseDescribeInstanceStatus {
+    #[serde(rename = "RequestId")]
+    pub request_id: String,
+    #[serde(rename = "TotalCount")]
+    pub total_count: u8,
+    #[serde(rename = "InstanceStatusSet")]
+    pub instance_status_set: Vec<TcsInstanceStatus>,
+}
+
+// DNS 解析记录
+#[derive(Deserialize, Debug, Clone)]
+pub struct TcsInstanceStatus {
+    #[serde(rename = "InstanceId")]
+    pub instance_id: String,
+    #[serde(rename = "InstanceState")]
+    pub instance_state: String,
 }
 
 // DNS 解析记录
@@ -188,6 +206,7 @@ impl TencentCloudApi {
         info!("[######][实例列表][@][tcs_describe_instances()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
+        let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
         let tcs_zone = tcs_data.tcs_zone.as_str();
         let tcs_image_id = tcs_data.tcs_image_id.as_str();
@@ -203,7 +222,7 @@ impl TencentCloudApi {
         // 请求参数
         //let payload = "{\"Limit\": 1, \"Filters\": [{\"Values\": [\"TCS-Instance-0\"], \"Name\": \"instance-name\"}]}";
         let payload = json!({
-            "Limit": 10,
+            "Limit": 100,
             "Filters": [
                 {
                     "Values": [instance_name],
@@ -219,14 +238,14 @@ impl TencentCloudApi {
         // 发起请求...
         return match self.tcs_request_api(tcs_action, tcs_region, api_payload.as_str()) {
             Result::Ok(tcs_response_data) => {
-                info!("[tcs_response_data: {}]", tcs_response_data);
+                debug!("[tcs_response_data: {}]", tcs_response_data);
 
                 // 解析为机型对象...
-                let tcs_response_data: TcsResponseDescribeInstanceBase = serde_json::from_str(&tcs_response_data)?;
+                let tcs_response_data: TcsResponseDescribeInstance = serde_json::from_str(&tcs_response_data)?;
                 info!("[tcs_response_data: {:?}]", tcs_response_data);
 
                 // 过滤机型...
-                let mut instance_set = tcs_response_data.response.instance_set;
+                let mut instance_set = tcs_response_data.instance_set;
                 if !instance_set.is_empty() {
                     return Ok(instance_set.first().unwrap().clone());
                 }
@@ -234,7 +253,60 @@ impl TencentCloudApi {
                 Result::Err("请求成功,但无实例!".into())
             }
             Result::Err(err) => {
-                error!("[tcs_request_data][err: {}]", err);
+                error!("[tcs_request_err: {:?}]", err);
+                Result::Err("请求失败(..)!".into())
+            }
+        };
+    }
+
+    // 实例列表
+    pub fn tcs_describe_instances_status(&mut self, tcs_data: &TcsData) -> Result<TcsResponseDescribeInstanceStatus, Box<dyn Error>> {
+        info!("[######][实例列表][@][describe_instances_status()][tcs_data: {:?}]", tcs_data);
+
+        // 获取 TCS 配置数据...
+        let tcs_title = tcs_data.tcs_title.as_str();
+        let tcs_region = tcs_data.tcs_region.as_str();
+        let tcs_zone = tcs_data.tcs_zone.as_str();
+        let tcs_image_id = tcs_data.tcs_image_id.as_str();
+        let host_name = tcs_data.host_name.as_str();
+        let instance_name = tcs_data.instance_name.as_str();
+        let instance_id = tcs_data.instance_id.as_str();
+        let password = tcs_data.password.as_str();
+        let key_ids = tcs_data.key_ids.clone();
+
+        // 配置请求参数...
+        let tcs_action = "DescribeInstancesStatus";
+
+        // 请求参数
+        //let payload = "{\"Limit\": 1, \"Filters\": [{\"Values\": [\"TCS-Instance-0\"], \"Name\": \"instance-name\"}]}";
+        let payload = json!({
+            "Limit": 100,
+        });
+        info!("[payload: {}]", payload);
+
+        let api_payload = to_string(&payload).unwrap();
+        //debug!("[api_payload: {}]", api_payload);
+
+        // 发起请求...
+        return match self.tcs_request_api(tcs_action, tcs_region, api_payload.as_str()) {
+            Result::Ok(tcs_response_data) => {
+                debug!("[tcs_response_data: {}]", tcs_response_data);
+
+                // 解析为机型对象...
+                let tcs_response_data: TcsResponseDescribeInstanceStatus = serde_json::from_str(&tcs_response_data)?;
+                info!("[tcs_response_data: {:?}]", tcs_response_data);
+
+                // // 过滤机型...
+                // let mut instance_status_set = tcs_response_data.instance_status_set;
+                // if !instance_status_set.is_empty() {
+                //     return Ok(instance_status_set.first().unwrap().clone());
+                // }
+                //Result::Err("请求成功,但无实例!".into())
+
+                return Ok(tcs_response_data);
+            }
+            Result::Err(err) => {
+                error!("[tcs_request_err: {:?}]", err);
                 Result::Err("请求失败(..)!".into())
             }
         };
@@ -245,6 +317,7 @@ impl TencentCloudApi {
         info!("[######][可用机型列表][@][tcs_describe_zone_instance_config_infos()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
+        let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
         let tcs_zone = tcs_data.tcs_zone.as_str();
         let tcs_image_id = tcs_data.tcs_image_id.as_str();
@@ -287,15 +360,15 @@ impl TencentCloudApi {
         // 发起请求...
         return match self.tcs_request_api(tcs_action, tcs_region, api_payload.as_str()) {
             Result::Ok(tcs_response_data) => {
-                info!("[tcs_response_data: {}]", tcs_response_data);
+                debug!("[tcs_response_data: {}]", tcs_response_data);
 
                 // 解析为机型对象...
-                //let tcs_response_data: TcsResponseZoneInstanceConfigInfos = serde_json::from_str(&tcs_response_data)?; //info!("[tcs_response_data: {:?}]", tcs_response_data);
+                //let tcs_response_data: TcsResponseZoneInstanceConfig = serde_json::from_str(&tcs_response_data)?; //info!("[tcs_response_data: {:?}]", tcs_response_data);
 
                 Ok("请求成功!".to_string())
             }
             Result::Err(err) => {
-                error!("[tcs_request_data][err: {}]", err);
+                error!("[tcs_request_err: {:?}]", err);
                 Result::Err("请求失败(..)!".into())
             }
         };
@@ -306,6 +379,7 @@ impl TencentCloudApi {
         info!("[######][可用机型列表][@][tcs_describe_zone_instance_config_infos()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
+        let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
         let tcs_zone = tcs_data.tcs_zone.as_str();
         let tcs_image_id = tcs_data.tcs_image_id.as_str();
@@ -348,15 +422,15 @@ impl TencentCloudApi {
         // 发起请求...
         return match self.tcs_request_api(tcs_action, tcs_region, api_payload.as_str()) {
             Result::Ok(tcs_response_data) => {
-                info!("[tcs_response_data: {}]", tcs_response_data);
+                // debug!("[tcs_response_data: {}]", tcs_response_data);
 
                 // 解析为机型对象...
-                let tcs_response_data: TcsResponseZoneInstanceConfigInfos = serde_json::from_str(&tcs_response_data)?;
+                let tcs_response_data: TcsResponseZoneInstanceConfig = serde_json::from_str(&tcs_response_data)?;
 
                 info!("[tcs_response_data: {:?}]", tcs_response_data);
 
                 // 过滤机型...
-                let mut instance_type_quota_set = tcs_response_data.response.instance_type_quota_set;
+                let mut instance_type_quota_set: Vec<TcsInstanceTypeQuota> = tcs_response_data.instance_type_quota_set;
                 if !instance_type_quota_set.is_empty() {
                     instance_type_quota_set.retain(|x| x.cpu == tcs_instance_cpu && x.memory == tcs_instance_memory && x.status == "SELL" && x.price.unit_price <= tcs_max_unit_price);
                     if !instance_type_quota_set.is_empty() {
@@ -367,7 +441,7 @@ impl TencentCloudApi {
                 Result::Err("请求成功,但无适配机型!".into())
             }
             Result::Err(err) => {
-                error!("[tcs_request_data][err: {}]", err);
+                error!("[tcs_request_err: {:?}]", err);
                 Result::Err("请求失败(..)!".into())
             }
         };
@@ -378,6 +452,7 @@ impl TencentCloudApi {
         info!("[######][创建实例][@][tcs_run_instances()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
+        let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
         let tcs_zone = tcs_data.tcs_zone.as_str();
         let tcs_image_id = tcs_data.tcs_image_id.as_str();
@@ -396,7 +471,7 @@ impl TencentCloudApi {
         // 查询实例数据 - 可用实例列表...
         match self.tcs_describe_instances(&tcs_data) {
             Result::Ok(tcs_response_data) => {
-                info!("[tcs_response_data: {:?}]", tcs_response_data);
+                // info!("[tcs_response_data: {:?}]", tcs_response_data);
                 return Result::Err("请求失败(实例已存在)!".into());
             }
             Result::Err(err) => {
@@ -415,7 +490,7 @@ impl TencentCloudApi {
                 tcs_response_data
             }
             Result::Err(err) => {
-                error!("[tcs_request_data][err: {}]", err);
+                error!("[tcs_request_err: {:?}]", err);
                 return Result::Err("请求失败(暂无可用机型)!".into());
             }
         };
@@ -480,11 +555,11 @@ impl TencentCloudApi {
         // 发起请求...
         return match self.tcs_request_api(tcs_action, tcs_region, api_payload.as_str()) {
             Result::Ok(tcs_response_data) => {
-                info!("[tcs_response_data: {}]", tcs_response_data);
+                debug!("[tcs_response_data: {}]", tcs_response_data);
                 Ok("请求成功!".to_string())
             }
             Result::Err(err) => {
-                error!("[tcs_request_data][err: {}]", err);
+                error!("[tcs_request_err: {:?}]", err);
                 Result::Err("请求失败(..)!".into())
             }
         };
@@ -495,6 +570,7 @@ impl TencentCloudApi {
         info!("[######][退还实例][@][tcs_terminate_instances()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
+        let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
         let tcs_zone = tcs_data.tcs_zone.as_str();
         let tcs_image_id = tcs_data.tcs_image_id.as_str();
@@ -507,11 +583,11 @@ impl TencentCloudApi {
         // 查询实例数据 - 可用实例列表...
         let tcs_instance_info: TcsInstanceInfo = match self.tcs_describe_instances(&tcs_data) {
             Result::Ok(tcs_response_data) => {
-                info!("[tcs_response_data: {:?}]", tcs_response_data);
+                // info!("[tcs_response_data: {:?}]", tcs_response_data);
                 tcs_response_data
             }
             Result::Err(err) => {
-                error!("[tcs_request_data][err: {}]", err);
+                error!("[tcs_request_err: {:?}]", err);
                 return Result::Err("请求失败(..)!".into());
             }
         };
@@ -550,11 +626,16 @@ impl TencentCloudApi {
         // 发起请求...
         return match self.tcs_request_api(tcs_action, tcs_region, api_payload.as_str()) {
             Result::Ok(tcs_response_data) => {
-                info!("[tcs_response_data: {}]", tcs_response_data);
+                debug!("[tcs_response_data: {}]", tcs_response_data);
+
+                // 解析为机型对象...
+                //let tcs_response_data: TcsResponseZoneInstanceConfig = serde_json::from_str(&tcs_response_data)?;
+                // info!("[tcs_response_data: {:?}]", tcs_response_data);
+
                 Ok("请求成功!".to_string())
             }
             Result::Err(err) => {
-                error!("[tcs_request_data][err: {}]", err);
+                error!("[tcs_request_err: {:?}]", err);
                 Result::Err("请求失败(..)!".into())
             }
         };
@@ -565,6 +646,7 @@ impl TencentCloudApi {
         info!("[######][启动实例][@][tcs_start_instances()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
+        let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
         let tcs_zone = tcs_data.tcs_zone.as_str();
         let tcs_image_id = tcs_data.tcs_image_id.as_str();
@@ -589,11 +671,11 @@ impl TencentCloudApi {
         // 发起请求...
         return match self.tcs_request_api(tcs_action, tcs_region, api_payload.as_str()) {
             Result::Ok(tcs_response_data) => {
-                info!("[tcs_response_data: {}]", tcs_response_data);
+                debug!("[tcs_response_data: {}]", tcs_response_data);
                 Ok("请求成功!".to_string())
             }
             Result::Err(err) => {
-                error!("[tcs_request_data][err: {}]", err);
+                error!("[tcs_request_err: {:?}]", err);
                 Result::Err("请求失败(..)!".into())
             }
         };
@@ -604,6 +686,7 @@ impl TencentCloudApi {
         info!("[######][关闭实例][@][tcs_stop_instances()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
+        let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
         let tcs_zone = tcs_data.tcs_zone.as_str();
         let tcs_image_id = tcs_data.tcs_image_id.as_str();
@@ -634,11 +717,11 @@ impl TencentCloudApi {
         // 发起请求...
         return match self.tcs_request_api(tcs_action, tcs_region, api_payload.as_str()) {
             Result::Ok(tcs_response_data) => {
-                info!("[tcs_response_data: {}]", tcs_response_data);
+                debug!("[tcs_response_data: {}]", tcs_response_data);
                 Ok("请求成功!".to_string())
             }
             Result::Err(err) => {
-                error!("[tcs_request_data][err: {}]", err);
+                error!("[tcs_request_err: {:?}]", err);
                 Result::Err("请求失败(..)!".into())
             }
         };
@@ -649,6 +732,7 @@ impl TencentCloudApi {
         info!("[######][重启实例][@][tcs_reboot_instances()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
+        let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
         let tcs_zone = tcs_data.tcs_zone.as_str();
         let tcs_image_id = tcs_data.tcs_image_id.as_str();
@@ -677,11 +761,11 @@ impl TencentCloudApi {
         // 发起请求...
         return match self.tcs_request_api(tcs_action, tcs_region, api_payload.as_str()) {
             Result::Ok(tcs_response_data) => {
-                info!("[tcs_response_data: {}]", tcs_response_data);
+                debug!("[tcs_response_data: {}]", tcs_response_data);
                 Ok("请求成功!".to_string())
             }
             Result::Err(err) => {
-                error!("[tcs_request_data][err: {}]", err);
+                error!("[tcs_request_err: {:?}]", err);
                 Result::Err("请求失败(..)!".into())
             }
         };
@@ -692,6 +776,7 @@ impl TencentCloudApi {
         info!("[######][重装实例][@][tcs_reset_instance()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
+        let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
         let tcs_zone = tcs_data.tcs_zone.as_str();
         let tcs_image_id = tcs_data.tcs_image_id.as_str();
@@ -704,11 +789,11 @@ impl TencentCloudApi {
         // 查询实例数据 - 可用实例列表...
         let tcs_instance_info: TcsInstanceInfo = match self.tcs_describe_instances(&tcs_data) {
             Result::Ok(tcs_response_data) => {
-                info!("[tcs_response_data: {:?}]", tcs_response_data);
+                // info!("[tcs_response_data: {:?}]", tcs_response_data);
                 tcs_response_data
             }
             Result::Err(err) => {
-                error!("[tcs_request_data][err: {}]", err);
+                error!("[tcs_request_err: {:?}]", err);
                 return Result::Err("请求失败(..)!".into());
             }
         };
@@ -747,11 +832,11 @@ impl TencentCloudApi {
         // 发起请求...
         return match self.tcs_request_api(tcs_action, tcs_region, api_payload.as_str()) {
             Result::Ok(tcs_response_data) => {
-                info!("[tcs_response_data: {}]", tcs_response_data);
+                debug!("[tcs_response_data: {}]", tcs_response_data);
                 Ok("请求成功!".to_string())
             }
             Result::Err(err) => {
-                error!("[tcs_request_data][err: {}]", err);
+                error!("[tcs_request_err: {:?}]", err);
                 Result::Err("请求失败(..)!".into())
             }
         };
@@ -762,6 +847,7 @@ impl TencentCloudApi {
         info!("[######][查看镜像列表][@][tcs_describe_images()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
+        let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
         let tcs_zone = tcs_data.tcs_zone.as_str();
         let tcs_image_id = tcs_data.tcs_image_id.as_str();
@@ -786,18 +872,18 @@ impl TencentCloudApi {
         // 发起请求...
         return match self.tcs_request_api(tcs_action, tcs_region, api_payload.as_str()) {
             Result::Ok(tcs_response_data) => {
-                info!("[tcs_response_data: {}]", tcs_response_data);
+                debug!("[tcs_response_data: {}]", tcs_response_data);
                 Ok("请求成功!".to_string())
             }
             Result::Err(err) => {
-                error!("[tcs_request_data][err: {}]", err);
+                error!("[tcs_request_err: {:?}]", err);
                 Result::Err("请求失败(..)!".into())
             }
         };
     }
 
     // 发起请求
-    pub fn tcs_request_api(&mut self, tcs_action: &str, tcs_region: &str, api_payload: &str) -> Result<String, Box<dyn Error>> {
+    pub fn tcs_request_api(&mut self, tcs_action: &str, tcs_region: &str, api_payload: &str) -> Result<String, TcsApiError> {
         info!("[@@@@@@][发起请求][tcs_request_api()][tcs_action: {}][tcs_region: {}][api_payload: {}]", tcs_action, tcs_region, api_payload);
 
         // 初始化请求参数
@@ -837,7 +923,7 @@ impl TencentCloudApi {
         headers.insert("X-TC-Region", tcs_region.parse().unwrap());
 
         // Parse the string of data into serde_json::Value.
-        let api_payload_value: Value = serde_json::from_str(api_payload)?;
+        let api_payload_value: Value = serde_json::from_str(api_payload).unwrap();
 
         // 请求TCS服务 - 请求接口...
         let client = Client::new();
@@ -848,13 +934,63 @@ impl TencentCloudApi {
             //.json(&payload_value)
             .headers(headers)
             .body(api_payload.to_string())
-            .send()?;
+            .send().unwrap();
 
         // 处理 TCS 响应数据...
-        let response_content = load_response(&mut response)?;
-        info!("[@]{}", "tcs_request_api_successful");
+        let response_content = load_response(&mut response).unwrap();
+        info!("[#]{}", "tcs_request_api_successful");
 
-        Ok(response_content)
+        // 判断是否可解析错误...
+        // [Support : new to rust and trying to handle serde_json::from_str errors #370](https://github.com/serde-rs/json/issues/370)
+        // [Serde json typed deserialize error handling – return or wrap the error](https://users.rust-lang.org/t/serde-json-typed-deserialize-error-handling-return-or-wrap-the-error/28235)
+        // let _: TcsResponseError = match serde_json::from_str(&response_content) {
+
+        // 首先解析响应数据
+        let tcs_response: TcsResponse = match serde_json::from_str(&response_content) {
+            Result::Ok(tcs_response) => {
+                info!("tcs response parsing successful!");
+                tcs_response
+            }
+            Result::Err(tcs_error) => {
+                debug!("tcs response parsing unsuccessful![tcs_error: {:?}]", tcs_error);
+                // 自定义错误
+                let tcs_api_error = TcsApiError {
+                    message: "tcs response parsing unsuccessful!".to_string(),
+                    code: "REQUEST_ID_NONE".to_string(),
+                };
+                return Result::Err(tcs_api_error);
+                // return Result::Err("接口请求响应数据解析错误!".into());
+            }
+        };
+
+        // 解析数据
+        let tcs_response_value = tcs_response.response;
+        // trace!("[@][tcs_response_value: {}]", tcs_response_value);
+        let tcs_response_info = to_string(&tcs_response_value).unwrap();
+
+        // 尝试解析响应错误
+        let tcs_response_error: TcsResponseError = match serde_json::from_str(&tcs_response_info) {
+            Result::Ok(tcs_response_error) => {
+                info!("tcs response parsing error successful!");
+                let tcs_response_error: TcsResponseError = tcs_response_error;
+                return Result::Err(tcs_response_error.error);
+            }
+            Result::Err(tcs_response_data) => {
+                debug!("tcs response parsing error unsuccessful![tcs_response_data: {:?}]", tcs_response_data);
+                // 自定义错误
+                let tcs_response_error = TcsResponseError {
+                    request_id: "REQUEST_ID_NONE".to_string(),
+                    error: TcsApiError {
+                        message: "tcs response parsing unsuccessful!".to_string(),
+                        code: "REQUEST_ID_NONE".to_string(),
+                    },
+                };
+                tcs_response_error
+            }
+        };
+        // trace!("[@][tcs_response_error: {:?}]", tcs_response_error);
+
+        Ok(tcs_response_info)
     }
 
     // 设置签名
