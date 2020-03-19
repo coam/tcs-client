@@ -125,7 +125,7 @@ pub struct TcsInstanceTypeQuotaPrice {
     #[serde(rename = "UnitPriceDiscount")]
     pub unit_price_discount: f32,
     #[serde(rename = "Discount")]
-    pub discount: String,
+    pub discount: u8,
     #[serde(rename = "ChargeUnit")]
     pub charge_unit: String,
 }
@@ -177,11 +177,30 @@ pub struct TcsInstanceInfo {
     #[serde(rename = "Memory")]
     pub memory: i32,
     #[serde(rename = "ImageId")]
-    pub image_id: String,
+    pub image_id: Option<String>,
     #[serde(rename = "OsName")]
     pub os_name: String,
     #[serde(rename = "RestrictState")]
     pub restrict_state: String,
+    #[serde(rename = "SystemDisk")]
+    pub system_disk: DiskInfo,
+    #[serde(rename = "DataDisks")]
+    pub data_disks: Option<Vec<DiskInfo>>,
+    #[serde(rename = "PrivateIpAddresses")]
+    pub private_ip_addresses: Option<Vec<String>>,
+    #[serde(rename = "PublicIpAddresses")]
+    pub public_ip_addresses: Option<Vec<String>>,
+}
+
+// DNS 解析记录
+#[derive(Deserialize, Debug, Clone)]
+pub struct DiskInfo {
+    #[serde(rename = "DiskType")]
+    pub disk_type: String,
+    #[serde(rename = "DiskId")]
+    pub disk_id: Option<String>,
+    #[serde(rename = "DiskSize")]
+    pub disk_size: u16,
 }
 
 pub struct TencentCloudApi {
@@ -202,8 +221,8 @@ impl TencentCloudApi {
     }
 
     // 实例列表
-    pub fn tcs_describe_instances(&mut self, tcs_data: &TcsData) -> Result<TcsInstanceInfo, Box<dyn Error>> {
-        info!("[######][实例列表][@][tcs_describe_instances()][tcs_data: {:?}]", tcs_data);
+    pub fn tcs_describe_instance_list(&mut self, tcs_data: &TcsData) -> Result<TcsResponseDescribeInstance, Box<dyn Error>> {
+        info!("[######][实例列表][@][tcs_describe_instance_list()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
         let tcs_title = tcs_data.tcs_title.as_str();
@@ -222,7 +241,53 @@ impl TencentCloudApi {
         // 请求参数
         //let payload = "{\"Limit\": 1, \"Filters\": [{\"Values\": [\"TCS-Instance-0\"], \"Name\": \"instance-name\"}]}";
         let payload = json!({
-            "Limit": 100,
+            "Limit": 100
+        });
+        info!("[payload: {}]", payload);
+
+        let api_payload = to_string(&payload).unwrap();
+        //debug!("[api_payload: {}]", api_payload);
+
+        // 发起请求...
+        return match self.tcs_request_api(tcs_action, tcs_region, api_payload.as_str()) {
+            Result::Ok(tcs_response_data) => {
+                debug!("[tcs_response_data: {}]", tcs_response_data);
+
+                // 解析为机型对象...
+                let tcs_response_data: TcsResponseDescribeInstance = serde_json::from_str(&tcs_response_data)?;
+                // info!("[tcs_response_data: {:?}]", tcs_response_data);
+
+                return Ok(tcs_response_data);
+            }
+            Result::Err(err) => {
+                error!("[tcs_request_err: {:?}]", err);
+                Result::Err("请求失败(..)!".into())
+            }
+        };
+    }
+
+    // 实例详情
+    pub fn tcs_describe_instance_info(&mut self, tcs_data: &TcsData) -> Result<Option<TcsInstanceInfo>, Box<dyn Error>> {
+        info!("[######][实例列表][@][tcs_describe_instance_info()][tcs_data: {:?}]", tcs_data);
+
+        // 获取 TCS 配置数据...
+        let tcs_title = tcs_data.tcs_title.as_str();
+        let tcs_region = tcs_data.tcs_region.as_str();
+        let tcs_zone = tcs_data.tcs_zone.as_str();
+        let tcs_image_id = tcs_data.tcs_image_id.as_str();
+        let host_name = tcs_data.host_name.as_str();
+        let instance_name = tcs_data.instance_name.as_str();
+        let instance_id = tcs_data.instance_id.as_str();
+        let password = tcs_data.password.as_str();
+        let key_ids = tcs_data.key_ids.clone();
+
+        // 配置请求参数...
+        let tcs_action = "DescribeInstances";
+
+        // 请求参数
+        //let payload = "{\"Limit\": 1, \"Filters\": [{\"Values\": [\"TCS-Instance-0\"], \"Name\": \"instance-name\"}]}";
+        let payload = json!({
+            "Limit": 10,
             "Filters": [
                 {
                     "Values": [instance_name],
@@ -242,15 +307,17 @@ impl TencentCloudApi {
 
                 // 解析为机型对象...
                 let tcs_response_data: TcsResponseDescribeInstance = serde_json::from_str(&tcs_response_data)?;
-                info!("[tcs_response_data: {:?}]", tcs_response_data);
+                // info!("[tcs_response_data: {:?}]", tcs_response_data);
 
-                // 过滤机型...
+                // 过滤实例...
                 let mut instance_set = tcs_response_data.instance_set;
-                if !instance_set.is_empty() {
-                    return Ok(instance_set.first().unwrap().clone());
+
+                // 如果没有满足的实例
+                if instance_set.is_empty() {
+                    return Ok(None);
                 }
 
-                Result::Err("请求成功,但无实例!".into())
+                return Ok(Some(instance_set.first().unwrap().clone()));
             }
             Result::Err(err) => {
                 error!("[tcs_request_err: {:?}]", err);
@@ -260,7 +327,7 @@ impl TencentCloudApi {
     }
 
     // 实例列表
-    pub fn tcs_describe_instances_status(&mut self, tcs_data: &TcsData) -> Result<TcsResponseDescribeInstanceStatus, Box<dyn Error>> {
+    pub fn tcs_describe_instance_status(&mut self, tcs_data: &TcsData) -> Result<TcsResponseDescribeInstanceStatus, Box<dyn Error>> {
         info!("[######][实例列表][@][describe_instances_status()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
@@ -431,8 +498,9 @@ impl TencentCloudApi {
 
                 // 过滤机型...
                 let mut instance_type_quota_set: Vec<TcsInstanceTypeQuota> = tcs_response_data.instance_type_quota_set;
+                info!("[筛选可以机型][tcs_instance_cpu: {:?}][tcs_instance_memory: {:?}][status: SELL][tcs_max_unit_price: {:?}]", tcs_instance_cpu, tcs_instance_memory, tcs_max_unit_price);
                 if !instance_type_quota_set.is_empty() {
-                    instance_type_quota_set.retain(|x| x.cpu == tcs_instance_cpu && x.memory == tcs_instance_memory && x.status == "SELL" && x.price.unit_price <= tcs_max_unit_price);
+                    instance_type_quota_set.retain(|x| x.cpu >= tcs_instance_cpu && x.memory >= tcs_instance_memory && x.status == "SELL" && x.price.unit_price_discount <= tcs_max_unit_price);
                     if !instance_type_quota_set.is_empty() {
                         return Ok(instance_type_quota_set.first().unwrap().clone());
                     }
@@ -469,17 +537,16 @@ impl TencentCloudApi {
 
         // 验证实例是否已创建...
         // 查询实例数据 - 可用实例列表...
-        match self.tcs_describe_instances(&tcs_data) {
+        match self.tcs_describe_instance_info(&tcs_data) {
             Result::Ok(tcs_response_data) => {
                 // info!("[tcs_response_data: {:?}]", tcs_response_data);
-                return Result::Err("请求失败(实例已存在)!".into());
+                if let Some(_) = tcs_response_data {
+                    return Result::Err("创建失败(实例已存在)!".into());
+                }
             }
             Result::Err(err) => {
                 warn!("[tcs_request_data][err: {}]", err);
-                if err.to_string() != "请求成功,但无实例!" {
-                    error!("请求失败或实例已存在,不可重复创建(..)!");
-                    return Result::Err("请求失败或实例已存在,不可重复创建(..)!".into());
-                }
+                return Result::Err("请求失败,请稍后尝试!".into());
             }
         };
 
@@ -581,10 +648,14 @@ impl TencentCloudApi {
         let key_ids = tcs_data.key_ids.clone();
 
         // 查询实例数据 - 可用实例列表...
-        let tcs_instance_info: TcsInstanceInfo = match self.tcs_describe_instances(&tcs_data) {
+        let tcs_instance_info: TcsInstanceInfo = match self.tcs_describe_instance_info(&tcs_data) {
             Result::Ok(tcs_response_data) => {
                 // info!("[tcs_response_data: {:?}]", tcs_response_data);
-                tcs_response_data
+                if let Some(tcs_instance_info) = tcs_response_data {
+                    tcs_instance_info
+                } else {
+                    return Result::Err("退还失败:实例不存在!".into());
+                }
             }
             Result::Err(err) => {
                 error!("[tcs_request_err: {:?}]", err);
@@ -787,10 +858,14 @@ impl TencentCloudApi {
         let key_ids = tcs_data.key_ids.clone();
 
         // 查询实例数据 - 可用实例列表...
-        let tcs_instance_info: TcsInstanceInfo = match self.tcs_describe_instances(&tcs_data) {
+        let tcs_instance_info: TcsInstanceInfo = match self.tcs_describe_instance_info(&tcs_data) {
             Result::Ok(tcs_response_data) => {
                 // info!("[tcs_response_data: {:?}]", tcs_response_data);
-                tcs_response_data
+                if let Some(tcs_instance_info) = tcs_response_data {
+                    tcs_instance_info
+                } else {
+                    return Result::Err("重置失败:实例不存在!".into());
+                }
             }
             Result::Err(err) => {
                 error!("[tcs_request_err: {:?}]", err);
