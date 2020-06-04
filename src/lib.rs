@@ -48,7 +48,12 @@ pub struct TcsData {
     pub tcs_image_id: String,
     pub password: String,
     pub key_ids: Vec<String>,
+    // 实例配置
     pub tcs_info: TcsInfo,
+    // 系统盘配置
+    pub system_disk: TcsDisk,
+    // 数据盘配置
+    pub data_disks: TcsDisk,
 }
 
 // DNS 解析记录
@@ -58,6 +63,15 @@ pub struct TcsInfo {
     pub instance_cpu: i32,
     pub instance_memory: i32,
     pub max_unit_price: f32,
+}
+
+// DNS 解析记录
+#[derive(Deserialize, Debug, Clone)]
+pub struct TcsDisk {
+    #[serde(rename = "DiskType")]
+    pub disk_type: String,
+    #[serde(rename = "DiskSize")]
+    pub disk_size: u8,
 }
 
 // DNS 解析记录
@@ -537,11 +551,20 @@ impl TencentCloudApi {
         let instance_id = tcs_data.instance_id.as_str();
         let password = tcs_data.password.as_str();
         let key_ids = tcs_data.key_ids.clone();
+        // 实例配置
         let tcs_info = tcs_data.tcs_info.clone();
         let tcs_instance_charge_type = tcs_info.instance_charge_type;
         let tcs_instance_cpu = tcs_info.instance_cpu;
         let tcs_instance_memory = tcs_info.instance_memory;
         let tcs_max_unit_price = tcs_info.max_unit_price;
+        // 系统盘配置
+        let system_disk = tcs_data.system_disk.clone();
+        let system_disk_type = system_disk.disk_type;
+        let system_disk_size = system_disk.disk_size;
+        // 数据盘配置
+        let data_disks = tcs_data.data_disks.clone();
+        let data_disk_type = data_disks.disk_type;
+        let data_disk_size = data_disks.disk_size;
 
         // 验证实例是否已创建...
         // 查询实例数据 - 可用实例列表...
@@ -585,13 +608,13 @@ impl TencentCloudApi {
             "InstanceChargeType": tcs_instance_charge_type,
             "InstanceType": instance_type,
             "SystemDisk": {
-                "DiskType": "CLOUD_PREMIUM",
-                "DiskSize": 50
+                "DiskType": system_disk_type,
+                "DiskSize": system_disk_size
             },
             "DataDisks": [
                 {
-                    "DiskType": "CLOUD_PREMIUM",
-                    "DiskSize": 10,
+                    "DiskType": data_disk_type,
+                    "DiskSize": data_disk_size,
                 }
             ],
             "InternetAccessible": {
