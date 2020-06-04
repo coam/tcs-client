@@ -113,6 +113,14 @@ pub struct TcsInstanceTypeQuota {
     pub instance_family: String,
     #[serde(rename = "TypeName")]
     pub type_name: String,
+    #[serde(rename = "StorageBlockAmount")]
+    pub storage_block_amount: u8,
+    #[serde(rename = "InstanceBandwidth")]
+    pub instance_bandwidth: f32,
+    #[serde(rename = "InstancePps")]
+    pub instance_pps: u8,
+    #[serde(rename = "CpuType")]
+    pub cpu_type: String,
     #[serde(rename = "Price")]
     pub price: TcsInstanceTypeQuotaPrice,
 }
@@ -125,7 +133,7 @@ pub struct TcsInstanceTypeQuotaPrice {
     #[serde(rename = "UnitPriceDiscount")]
     pub unit_price_discount: f32,
     #[serde(rename = "Discount")]
-    pub discount: u8,
+    pub discount: f32,
     #[serde(rename = "ChargeUnit")]
     pub charge_unit: String,
 }
