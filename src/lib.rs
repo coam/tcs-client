@@ -1142,9 +1142,9 @@ pub fn hmac_256(secret_key: Vec<u8>, payload: &str) -> Vec<u8> {
     //debug!("[签名Key十六进制字符串][secret_key.as_bytes(): {:02X?}]", secret_key);
 
     // [0.16.9]
-    //let secret_key = hmac::Key::new(hmac::HMAC_SHA256, &secret_key);
+    let secret_key = hmac::Key::new(hmac::HMAC_SHA256, &secret_key);
     // [0.13.5]
-    let secret_key = hmac::SigningKey::new(&ring::digest::SHA256, &secret_key);
+    // let secret_key = hmac::SigningKey::new(&ring::digest::SHA256, &secret_key);
 
     let payload_digest = hmac::sign(&secret_key, payload.as_bytes());
 
