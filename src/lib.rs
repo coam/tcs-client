@@ -7,14 +7,14 @@ use serde::Deserialize;
 use std::collections::HashMap;
 
 // reqwest
-use reqwest::{Client, StatusCode};
+use reqwest::{blocking::Client, StatusCode};
 use reqwest::header::{HeaderMap, HeaderValue};
 
 use std::error::Error;
 use std::io::{Read, Write};
 
 // 打印请求日志数据...
-fn load_response(response: &mut reqwest::Response) -> Result<String, Box<dyn Error>> {
+fn load_response(response: &mut reqwest::blocking::Response) -> Result<String, Box<dyn Error>> {
     // 读取到字符串
     let mut content = String::new();
     response.read_to_string(&mut content)?;
