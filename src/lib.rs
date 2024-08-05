@@ -1,17 +1,17 @@
-use chrono::{DateTime, Duration, Utc};
-use deflate::{deflate_bytes_zlib_conf, Compression};
+// use chrono::{Duration, Utc};
+// use deflate::{deflate_bytes_zlib_conf, Compression};
 use log::*;
 use ring::hmac;
-use serde_json::{json, Value, from_str, to_string, to_value};
 use serde::Deserialize;
-use std::collections::HashMap;
+use serde_json::{json, to_string, Value};
+// use std::collections::HashMap;
 
 // reqwest
-use reqwest::{blocking::Client, StatusCode};
-use reqwest::header::{HeaderMap, HeaderValue};
+use reqwest::blocking::Client;
+use reqwest::header::HeaderMap;
 
 use std::error::Error;
-use std::io::{Read, Write};
+use std::io::Read;
 
 // 打印请求日志数据...
 fn load_response(response: &mut reqwest::blocking::Response) -> Result<String, Box<dyn Error>> {
@@ -233,15 +233,15 @@ impl TencentCloudApi {
         info!("[######][实例列表][@][tcs_describe_instance_list()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
-        let tcs_title = tcs_data.tcs_title.as_str();
+        // let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
-        let tcs_zone = tcs_data.tcs_zone.as_str();
-        let tcs_image_id = tcs_data.tcs_image_id.as_str();
-        let host_name = tcs_data.host_name.as_str();
-        let instance_name = tcs_data.instance_name.as_str();
-        let instance_id = tcs_data.instance_id.as_str();
-        let password = tcs_data.password.as_str();
-        let key_ids = tcs_data.key_ids.clone();
+        // let tcs_zone = tcs_data.tcs_zone.as_str();
+        // let tcs_image_id = tcs_data.tcs_image_id.as_str();
+        // let host_name = tcs_data.host_name.as_str();
+        // let instance_name = tcs_data.instance_name.as_str();
+        // let instance_id = tcs_data.instance_id.as_str();
+        // let password = tcs_data.password.as_str();
+        // let key_ids = tcs_data.key_ids.clone();
 
         // 配置请求参数...
         let tcs_action = "DescribeInstances";
@@ -279,15 +279,15 @@ impl TencentCloudApi {
         info!("[######][实例列表][@][tcs_describe_instance_info()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
-        let tcs_title = tcs_data.tcs_title.as_str();
+        // let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
-        let tcs_zone = tcs_data.tcs_zone.as_str();
-        let tcs_image_id = tcs_data.tcs_image_id.as_str();
-        let host_name = tcs_data.host_name.as_str();
+        // let tcs_zone = tcs_data.tcs_zone.as_str();
+        // let tcs_image_id = tcs_data.tcs_image_id.as_str();
+        // let host_name = tcs_data.host_name.as_str();
         let instance_name = tcs_data.instance_name.as_str();
-        let instance_id = tcs_data.instance_id.as_str();
-        let password = tcs_data.password.as_str();
-        let key_ids = tcs_data.key_ids.clone();
+        // let instance_id = tcs_data.instance_id.as_str();
+        // let password = tcs_data.password.as_str();
+        // let key_ids = tcs_data.key_ids.clone();
 
         // 配置请求参数...
         let tcs_action = "DescribeInstances";
@@ -318,7 +318,7 @@ impl TencentCloudApi {
                 // info!("[tcs_response_data: {:?}]", tcs_response_data);
 
                 // 过滤实例...
-                let mut instance_set = tcs_response_data.instance_set;
+                let instance_set = tcs_response_data.instance_set;
 
                 // 如果没有满足的实例
                 if instance_set.is_empty() {
@@ -339,15 +339,15 @@ impl TencentCloudApi {
         info!("[######][实例列表][@][describe_instances_status()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
-        let tcs_title = tcs_data.tcs_title.as_str();
+        // let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
-        let tcs_zone = tcs_data.tcs_zone.as_str();
-        let tcs_image_id = tcs_data.tcs_image_id.as_str();
-        let host_name = tcs_data.host_name.as_str();
-        let instance_name = tcs_data.instance_name.as_str();
-        let instance_id = tcs_data.instance_id.as_str();
-        let password = tcs_data.password.as_str();
-        let key_ids = tcs_data.key_ids.clone();
+        // let tcs_zone = tcs_data.tcs_zone.as_str();
+        // let tcs_image_id = tcs_data.tcs_image_id.as_str();
+        // let host_name = tcs_data.host_name.as_str();
+        // let instance_name = tcs_data.instance_name.as_str();
+        // let instance_id = tcs_data.instance_id.as_str();
+        // let password = tcs_data.password.as_str();
+        // let key_ids = tcs_data.key_ids.clone();
 
         // 配置请求参数...
         let tcs_action = "DescribeInstancesStatus";
@@ -392,41 +392,41 @@ impl TencentCloudApi {
         info!("[######][可用机型列表][@][tcs_describe_zone_instance_config_infos()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
-        let tcs_title = tcs_data.tcs_title.as_str();
+        // let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
         let tcs_zone = tcs_data.tcs_zone.as_str();
-        let tcs_image_id = tcs_data.tcs_image_id.as_str();
-        let host_name = tcs_data.host_name.as_str();
-        let instance_name = tcs_data.instance_name.as_str();
-        let instance_id = tcs_data.instance_id.as_str();
-        let password = tcs_data.password.as_str();
-        let key_ids = tcs_data.key_ids.clone();
+        // let tcs_image_id = tcs_data.tcs_image_id.as_str();
+        // let host_name = tcs_data.host_name.as_str();
+        // let instance_name = tcs_data.instance_name.as_str();
+        // let instance_id = tcs_data.instance_id.as_str();
+        // let password = tcs_data.password.as_str();
+        // let key_ids = tcs_data.key_ids.clone();
         let tcs_info = tcs_data.tcs_info.clone();
         let tcs_instance_charge_type = tcs_info.instance_charge_type;
-        let tcs_instance_cpu = tcs_info.instance_cpu;
-        let tcs_instance_memory = tcs_info.instance_memory;
-        let tcs_max_unit_price = tcs_info.max_unit_price;
+        // let tcs_instance_cpu = tcs_info.instance_cpu;
+        // let tcs_instance_memory = tcs_info.instance_memory;
+        // let tcs_max_unit_price = tcs_info.max_unit_price;
 
         // 配置请求参数...
         let tcs_action = "DescribeZoneInstanceConfigInfos";
 
         // 请求参数
         let payload = json!({
-            "Filters": [
-                {
-                    "Values": [tcs_zone],
-                    "Name": "zone"
-                },
-//                {
-//                    "Values": ["S2.LARGE8"],
-//                    "Name": "instance-family"
-//                },
-                {
-                    "Values": [tcs_instance_charge_type],
-                    "Name": "instance-charge-type"
-                }
-            ]
-        });
+                    "Filters": [
+                        {
+                            "Values": [tcs_zone],
+                            "Name": "zone"
+                        },
+        //                {
+        //                    "Values": ["S2.LARGE8"],
+        //                    "Name": "instance-family"
+        //                },
+                        {
+                            "Values": [tcs_instance_charge_type],
+                            "Name": "instance-charge-type"
+                        }
+                    ]
+                });
         info!("[payload: {}]", payload);
 
         let api_payload = to_string(&payload).unwrap();
@@ -454,15 +454,15 @@ impl TencentCloudApi {
         info!("[######][可用机型列表][@][tcs_describe_zone_instance_config_infos()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
-        let tcs_title = tcs_data.tcs_title.as_str();
+        // let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
         let tcs_zone = tcs_data.tcs_zone.as_str();
-        let tcs_image_id = tcs_data.tcs_image_id.as_str();
-        let host_name = tcs_data.host_name.as_str();
-        let instance_name = tcs_data.instance_name.as_str();
-        let instance_id = tcs_data.instance_id.as_str();
-        let password = tcs_data.password.as_str();
-        let key_ids = tcs_data.key_ids.clone();
+        // let tcs_image_id = tcs_data.tcs_image_id.as_str();
+        // let host_name = tcs_data.host_name.as_str();
+        // let instance_name = tcs_data.instance_name.as_str();
+        // let instance_id = tcs_data.instance_id.as_str();
+        // let password = tcs_data.password.as_str();
+        // let key_ids = tcs_data.key_ids.clone();
         let tcs_info = tcs_data.tcs_info.clone();
         let tcs_instance_charge_type = tcs_info.instance_charge_type;
         let tcs_instance_cpu = tcs_info.instance_cpu;
@@ -474,21 +474,21 @@ impl TencentCloudApi {
 
         // 请求参数
         let payload = json!({
-            "Filters": [
-                {
-                    "Values": [tcs_zone],
-                    "Name": "zone"
-                },
-//                {
-//                    "Values": ["S2.LARGE8"],
-//                    "Name": "instance-family"
-//                },
-                {
-                    "Values": [tcs_instance_charge_type],
-                    "Name": "instance-charge-type"
-                }
-            ]
-        });
+                    "Filters": [
+                        {
+                            "Values": [tcs_zone],
+                            "Name": "zone"
+                        },
+        //                {
+        //                    "Values": ["S2.LARGE8"],
+        //                    "Name": "instance-family"
+        //                },
+                        {
+                            "Values": [tcs_instance_charge_type],
+                            "Name": "instance-charge-type"
+                        }
+                    ]
+                });
         info!("[payload: {}]", payload);
 
         let api_payload = to_string(&payload).unwrap();
@@ -506,7 +506,10 @@ impl TencentCloudApi {
 
                 // 过滤机型...
                 let mut instance_type_quota_set: Vec<TcsInstanceTypeQuota> = tcs_response_data.instance_type_quota_set;
-                info!("[筛选可以机型][tcs_instance_cpu: {:?}][tcs_instance_memory: {:?}][status: SELL][tcs_max_unit_price: {:?}]", tcs_instance_cpu, tcs_instance_memory, tcs_max_unit_price);
+                info!(
+                    "[筛选可以机型][tcs_instance_cpu: {:?}][tcs_instance_memory: {:?}][status: SELL][tcs_max_unit_price: {:?}]",
+                    tcs_instance_cpu, tcs_instance_memory, tcs_max_unit_price
+                );
                 if !instance_type_quota_set.is_empty() {
                     instance_type_quota_set.retain(|x| x.cpu >= tcs_instance_cpu && x.memory >= tcs_instance_memory && x.status == "SELL" && x.price.unit_price_discount <= tcs_max_unit_price);
                     if !instance_type_quota_set.is_empty() {
@@ -528,19 +531,19 @@ impl TencentCloudApi {
         info!("[######][创建实例][@][tcs_run_instances()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
-        let tcs_title = tcs_data.tcs_title.as_str();
+        // let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
         let tcs_zone = tcs_data.tcs_zone.as_str();
         let tcs_image_id = tcs_data.tcs_image_id.as_str();
-        let host_name = tcs_data.host_name.as_str();
+        // let host_name = tcs_data.host_name.as_str();
         let instance_name = tcs_data.instance_name.as_str();
-        let instance_id = tcs_data.instance_id.as_str();
+        // let instance_id = tcs_data.instance_id.as_str();
         let password = tcs_data.password.as_str();
-        let key_ids = tcs_data.key_ids.clone();
+        // let key_ids = tcs_data.key_ids.clone();
         let tcs_info = tcs_data.tcs_info.clone();
         let tcs_instance_charge_type = tcs_info.instance_charge_type;
-        let tcs_instance_cpu = tcs_info.instance_cpu;
-        let tcs_instance_memory = tcs_info.instance_memory;
+        // let tcs_instance_cpu = tcs_info.instance_cpu;
+        // let tcs_instance_memory = tcs_info.instance_memory;
         let tcs_max_unit_price = tcs_info.max_unit_price;
 
         // 验证实例是否已创建...
@@ -572,7 +575,7 @@ impl TencentCloudApi {
 
         // 机型信息
         let instance_type = tcs_instance_info.instance_type;
-        let instance_charge_type = tcs_instance_info.instance_charge_type;
+        // let instance_charge_type = tcs_instance_info.instance_charge_type;
 
         // 配置请求参数...
         let tcs_action = "RunInstances";
@@ -645,15 +648,15 @@ impl TencentCloudApi {
         info!("[######][退还实例][@][tcs_terminate_instances()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
-        let tcs_title = tcs_data.tcs_title.as_str();
+        // let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
-        let tcs_zone = tcs_data.tcs_zone.as_str();
-        let tcs_image_id = tcs_data.tcs_image_id.as_str();
-        let host_name = tcs_data.host_name.as_str();
-        let instance_name = tcs_data.instance_name.as_str();
-        let instance_id = tcs_data.instance_id.as_str();
-        let password = tcs_data.password.as_str();
-        let key_ids = tcs_data.key_ids.clone();
+        // let tcs_zone = tcs_data.tcs_zone.as_str();
+        // let tcs_image_id = tcs_data.tcs_image_id.as_str();
+        // let host_name = tcs_data.host_name.as_str();
+        // let instance_name = tcs_data.instance_name.as_str();
+        // let instance_id = tcs_data.instance_id.as_str();
+        // let password = tcs_data.password.as_str();
+        // let key_ids = tcs_data.key_ids.clone();
 
         // 查询实例数据 - 可用实例列表...
         let tcs_instance_info: TcsInstanceInfo = match self.tcs_describe_instance_info(&tcs_data) {
@@ -673,7 +676,7 @@ impl TencentCloudApi {
 
         // 实例信息
         let instance_id = tcs_instance_info.instance_id;
-        let instance_name = tcs_instance_info.instance_name;
+        // let instance_name = tcs_instance_info.instance_name;
         let instance_charge_type = tcs_instance_info.instance_charge_type;
 
         // 配置请求参数...
@@ -725,15 +728,15 @@ impl TencentCloudApi {
         info!("[######][启动实例][@][tcs_start_instances()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
-        let tcs_title = tcs_data.tcs_title.as_str();
+        // let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
-        let tcs_zone = tcs_data.tcs_zone.as_str();
-        let tcs_image_id = tcs_data.tcs_image_id.as_str();
-        let host_name = tcs_data.host_name.as_str();
-        let instance_name = tcs_data.instance_name.as_str();
+        // let tcs_zone = tcs_data.tcs_zone.as_str();
+        // let tcs_image_id = tcs_data.tcs_image_id.as_str();
+        // let host_name = tcs_data.host_name.as_str();
+        // let instance_name = tcs_data.instance_name.as_str();
         let instance_id = tcs_data.instance_id.as_str();
-        let password = tcs_data.password.as_str();
-        let key_ids = tcs_data.key_ids.clone();
+        // let password = tcs_data.password.as_str();
+        // let key_ids = tcs_data.key_ids.clone();
 
         // 配置请求参数...
         let tcs_action = "StartInstances";
@@ -765,15 +768,15 @@ impl TencentCloudApi {
         info!("[######][关闭实例][@][tcs_stop_instances()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
-        let tcs_title = tcs_data.tcs_title.as_str();
+        // let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
-        let tcs_zone = tcs_data.tcs_zone.as_str();
-        let tcs_image_id = tcs_data.tcs_image_id.as_str();
-        let host_name = tcs_data.host_name.as_str();
-        let instance_name = tcs_data.instance_name.as_str();
+        // let tcs_zone = tcs_data.tcs_zone.as_str();
+        // let tcs_image_id = tcs_data.tcs_image_id.as_str();
+        // let host_name = tcs_data.host_name.as_str();
+        // let instance_name = tcs_data.instance_name.as_str();
         let instance_id = tcs_data.instance_id.as_str();
-        let password = tcs_data.password.as_str();
-        let key_ids = tcs_data.key_ids.clone();
+        // let password = tcs_data.password.as_str();
+        // let key_ids = tcs_data.key_ids.clone();
 
         // 配置请求参数...
         let tcs_action = "StopInstances";
@@ -811,15 +814,15 @@ impl TencentCloudApi {
         info!("[######][重启实例][@][tcs_reboot_instances()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
-        let tcs_title = tcs_data.tcs_title.as_str();
+        // let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
-        let tcs_zone = tcs_data.tcs_zone.as_str();
-        let tcs_image_id = tcs_data.tcs_image_id.as_str();
-        let host_name = tcs_data.host_name.as_str();
-        let instance_name = tcs_data.instance_name.as_str();
+        // let tcs_zone = tcs_data.tcs_zone.as_str();
+        // let tcs_image_id = tcs_data.tcs_image_id.as_str();
+        // let host_name = tcs_data.host_name.as_str();
+        // let instance_name = tcs_data.instance_name.as_str();
         let instance_id = tcs_data.instance_id.as_str();
-        let password = tcs_data.password.as_str();
-        let key_ids = tcs_data.key_ids.clone();
+        // let password = tcs_data.password.as_str();
+        // let key_ids = tcs_data.key_ids.clone();
 
         // 配置请求参数...
         let tcs_action = "RebootInstances";
@@ -855,15 +858,15 @@ impl TencentCloudApi {
         info!("[######][重装实例][@][tcs_reset_instance()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
-        let tcs_title = tcs_data.tcs_title.as_str();
+        // let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
-        let tcs_zone = tcs_data.tcs_zone.as_str();
+        // let tcs_zone = tcs_data.tcs_zone.as_str();
         let tcs_image_id = tcs_data.tcs_image_id.as_str();
         let host_name = tcs_data.host_name.as_str();
-        let instance_name = tcs_data.instance_name.as_str();
-        let instance_id = tcs_data.instance_id.as_str();
+        // let instance_name = tcs_data.instance_name.as_str();
+        // let instance_id = tcs_data.instance_id.as_str();
         let password = tcs_data.password.as_str();
-        let key_ids = tcs_data.key_ids.clone();
+        // let key_ids = tcs_data.key_ids.clone();
 
         // 查询实例数据 - 可用实例列表...
         let tcs_instance_info: TcsInstanceInfo = match self.tcs_describe_instance_info(&tcs_data) {
@@ -883,8 +886,8 @@ impl TencentCloudApi {
 
         // 实例信息
         let instance_id = tcs_instance_info.instance_id;
-        let instance_name = tcs_instance_info.instance_name;
-        let instance_charge_type = tcs_instance_info.instance_charge_type;
+        // let instance_name = tcs_instance_info.instance_name;
+        // let instance_charge_type = tcs_instance_info.instance_charge_type;
 
         // 配置请求参数...
         let tcs_action = "ResetInstance";
@@ -930,15 +933,15 @@ impl TencentCloudApi {
         info!("[######][查看镜像列表][@][tcs_describe_images()][tcs_data: {:?}]", tcs_data);
 
         // 获取 TCS 配置数据...
-        let tcs_title = tcs_data.tcs_title.as_str();
+        // let tcs_title = tcs_data.tcs_title.as_str();
         let tcs_region = tcs_data.tcs_region.as_str();
-        let tcs_zone = tcs_data.tcs_zone.as_str();
-        let tcs_image_id = tcs_data.tcs_image_id.as_str();
-        let host_name = tcs_data.host_name.as_str();
-        let instance_name = tcs_data.instance_name.as_str();
-        let instance_id = tcs_data.instance_id.as_str();
-        let password = tcs_data.password.as_str();
-        let key_ids = tcs_data.key_ids.clone();
+        // let tcs_zone = tcs_data.tcs_zone.as_str();
+        // let tcs_image_id = tcs_data.tcs_image_id.as_str();
+        // let host_name = tcs_data.host_name.as_str();
+        // let instance_name = tcs_data.instance_name.as_str();
+        // let instance_id = tcs_data.instance_id.as_str();
+        // let password = tcs_data.password.as_str();
+        // let key_ids = tcs_data.key_ids.clone();
 
         // 配置请求参数...
         let tcs_action = "DescribeImages";
@@ -975,11 +978,11 @@ impl TencentCloudApi {
         let tcs_version = "2017-03-12";
 
         // 获取记录调用时间...
-        let mut request_time = chrono::Local::now();
-        let mut request_ts = request_time.timestamp();
-        let mut request_date = request_time.format("%Y-%m-%d").to_string();
+        let request_time = chrono::Local::now();
+        let request_ts = request_time.timestamp();
+        let request_date = request_time.format("%Y-%m-%d").to_string();
         // 请求参数格式...
-        let request_ct = "application/json; charset=utf-8";
+        // let request_ct = "application/json; charset=utf-8";
         let request_ct = "application/json";
 
         // 测试对比时间...
@@ -990,7 +993,35 @@ impl TencentCloudApi {
         // 计算签名...
         let authorization = self.request_tcs_signer(tcs_host, tcs_region, tcs_action, tcs_service, api_payload, request_ct, request_ts, request_date.as_str());
 
-        let curl = format!("{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}", "curl -X POST https://", tcs_host, " -H \"Authorization: ", authorization, "\"", " -H \"Content-Type: ", request_ct, "\"", " -H \"Host: ", tcs_host, "\"", " -H \"X-TC-Action: ", tcs_action, "\"", " -H \"X-TC-Timestamp: ", request_ts, "\"", " -H \"X-TC-Version: ", tcs_version, "\"", " -H \"X-TC-Region: ", tcs_region, "\"", " -d '", api_payload, "'");
+        let curl = format!(
+            "{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}",
+            "curl -X POST https://",
+            tcs_host,
+            " -H \"Authorization: ",
+            authorization,
+            "\"",
+            " -H \"Content-Type: ",
+            request_ct,
+            "\"",
+            " -H \"Host: ",
+            tcs_host,
+            "\"",
+            " -H \"X-TC-Action: ",
+            tcs_action,
+            "\"",
+            " -H \"X-TC-Timestamp: ",
+            request_ts,
+            "\"",
+            " -H \"X-TC-Version: ",
+            tcs_version,
+            "\"",
+            " -H \"X-TC-Region: ",
+            tcs_region,
+            "\"",
+            " -d '",
+            api_payload,
+            "'"
+        );
         info!("[curl: ]\n{}", curl);
 
         // 使用POST请求
@@ -1006,18 +1037,20 @@ impl TencentCloudApi {
         headers.insert("X-TC-Region", tcs_region.parse().unwrap());
 
         // Parse the string of data into serde_json::Value.
-        let api_payload_value: Value = serde_json::from_str(api_payload).unwrap();
+        // let api_payload_value: Value = serde_json::from_str(api_payload).unwrap();
 
         // 请求TCS服务 - 请求接口...
         let client = Client::new();
-        let url = (String::from("https://") + tcs_host);
+        let url = String::from("https://") + tcs_host;
         //let url = "https://www.nocs.cn/service/requestToken";
-        let mut response = client.post(url.as_str())
+        let mut response = client
+            .post(url.as_str())
             //.json(&payload_json)
             //.json(&payload_value)
             .headers(headers)
             .body(api_payload.to_string())
-            .send().unwrap();
+            .send()
+            .unwrap();
 
         // 处理 TCS 响应数据...
         let response_content = load_response(&mut response).unwrap();
@@ -1052,7 +1085,7 @@ impl TencentCloudApi {
         let tcs_response_info = to_string(&tcs_response_value).unwrap();
 
         // 尝试解析响应错误
-        let tcs_response_error: TcsResponseError = match serde_json::from_str(&tcs_response_info) {
+        let _tcs_response_error: TcsResponseError = match serde_json::from_str(&tcs_response_info) {
             Result::Ok(tcs_response_error) => {
                 info!("tcs response parsing error successful!");
                 let tcs_response_error: TcsResponseError = tcs_response_error;
@@ -1079,7 +1112,10 @@ impl TencentCloudApi {
     // 设置签名
     // [接口鉴权 v3](https://cloud.tencent.com/document/api/213/30654)
     pub fn request_tcs_signer(&mut self, tcs_host: &str, tcs_region: &str, tcs_action: &str, tcs_service: &str, api_payload: &str, request_ct: &str, request_ts: i64, request_date: &str) -> String {
-        debug!("[接口签名][request_tcs_signer()][tcs_host: {}][tcs_region: {}][tcs_action: {}][tcs_service: {}][api_payload: {}][request_ct: {}][request_ts: {}][request_date: {}]", tcs_host, tcs_region, tcs_action, tcs_service, api_payload, request_ct, request_ts, request_date);
+        debug!(
+            "[接口签名][request_tcs_signer()][tcs_host: {}][tcs_region: {}][tcs_action: {}][tcs_service: {}][api_payload: {}][request_ct: {}][request_ts: {}][request_date: {}]",
+            tcs_host, tcs_region, tcs_action, tcs_service, api_payload, request_ct, request_ts, request_date
+        );
 
         // 签名算法...
         let tcs_algorithm = "TC3-HMAC-SHA256";
@@ -1095,7 +1131,10 @@ impl TencentCloudApi {
         let api_payload_sha256 = sha256_hex(api_payload);
         //debug!("[api_payload_sha256: ]\n{}", api_payload_sha256);
 
-        let request_canonical = format!("{}{}{}{}{}{}{}{}{}{}{}", request_method, "\n", request_uri, "\n", request_qs, "\n", request_headers, "\n", request_headers_signed_data, "\n", api_payload_sha256);
+        let request_canonical = format!(
+            "{}{}{}{}{}{}{}{}{}{}{}",
+            request_method, "\n", request_uri, "\n", request_qs, "\n", request_headers, "\n", request_headers_signed_data, "\n", api_payload_sha256
+        );
         //debug!("[request_canonical: ]\n{}", request_canonical);
 
         // ************* 步骤 2：拼接待签名字符串 *************
@@ -1124,7 +1163,10 @@ impl TencentCloudApi {
         //debug!("[request_tc3_canonical_signature: ]\n{:?}", request_tc3_canonical_signature);
 
         // ************* 步骤 4：拼接 Authorization *************
-        let authorization = format!("{}{}{}{}{}{}{}{}{}{}{}{}", tcs_algorithm, " ", "Credential=", self.secret_id, "/", request_credential_scope, ", ", "SignedHeaders=", request_headers_signed_data, ", ", "Signature=", request_tc3_canonical_signature);
+        let authorization = format!(
+            "{}{}{}{}{}{}{}{}{}{}{}{}",
+            tcs_algorithm, " ", "Credential=", self.secret_id, "/", request_credential_scope, ", ", "SignedHeaders=", request_headers_signed_data, ", ", "Signature=", request_tc3_canonical_signature
+        );
         debug!("[authorization: ]\n{}", authorization);
 
         authorization
@@ -1162,14 +1204,14 @@ pub fn bytes_to_string(data_bytes: &[u8]) -> String {
 
 #[cfg(test)]
 mod test {
-    use log::*;
-    use super::TencentCloudApi;
-    use chrono::{Duration, TimeZone, Utc};
+    // use super::TencentCloudApi;
+    // use chrono::Utc;
+    // use log::*;
 
-    const MOCK_APP_ID: u64 = 1400000000;
-    const MOCK_SECRET_ID: &'static str = "5bd2850fff3ecb11d7c805251c51ee463a25727bddc2385f3fa8bfee1bb93b5e";
-    const MOCK_SECRET_KEY: &'static str = "balabala...";
-    const MOCK_USERBUF: &'static str = "abc";
+    // const MOCK_APP_ID: u64 = 1400000000;
+    // const MOCK_SECRET_ID: &'static str = "5bd2850fff3ecb11d7c805251c51ee463a25727bddc2385f3fa8bfee1bb93b5e";
+    // const MOCK_SECRET_KEY: &'static str = "balabala...";
+    // const MOCK_USERBUF: &'static str = "abc";
 
     fn log_init() {
         let _ = env_logger::builder().is_test(true).try_init();

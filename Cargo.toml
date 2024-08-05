@@ -22,8 +22,8 @@ base64 = "0.10"
 ring = "0.16.19"
 serde = { version = "1.0.97", features = ["derive"] }
 serde_json = { version = "1.0.40", features = ["preserve_order"] }
-deflate =  "0.8"
-chrono =  "0.4"
+deflate = "0.8"
+chrono = "0.4"
 log = "0.4"
 reqwest = { version = "0.11.4", features = ["blocking", "gzip", "multipart", "json"] }
 
