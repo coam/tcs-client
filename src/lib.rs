@@ -211,6 +211,7 @@ pub struct DiskInfo {
     pub disk_size: u16,
 }
 
+#[allow(dead_code)]
 pub struct TencentCloudApi {
     tcs_version: &'static str,
     app_id: u64,
