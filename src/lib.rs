@@ -36,7 +36,6 @@ fn load_response(response: &mut reqwest::blocking::Response) -> Result<String, B
     Ok(content)
 }
 
-// DNS 解析记录
 #[derive(Deserialize, Debug, Clone)]
 pub struct TcsData {
     pub tcs_title: String,
@@ -51,7 +50,6 @@ pub struct TcsData {
     pub tcs_info: TcsInfo,
 }
 
-// DNS 解析记录
 #[derive(Deserialize, Debug, Clone)]
 pub struct TcsInfo {
     pub instance_charge_type: String,
@@ -60,14 +58,12 @@ pub struct TcsInfo {
     pub max_unit_price: f32,
 }
 
-// DNS 解析记录
 #[derive(Deserialize, Debug, Clone)]
 pub struct TcsResponse {
     #[serde(rename = "Response")]
     pub response: Value,
 }
 
-// DNS 解析记录
 #[derive(Deserialize, Debug, Clone)]
 pub struct TcsResponseError {
     #[serde(rename = "RequestId")]
@@ -76,7 +72,6 @@ pub struct TcsResponseError {
     pub error: TcsApiError,
 }
 
-// DNS 解析记录
 #[derive(Deserialize, Debug, Clone)]
 pub struct TcsApiError {
     #[serde(rename = "Code")]
@@ -85,7 +80,6 @@ pub struct TcsApiError {
     pub message: String,
 }
 
-// DNS 解析记录
 #[derive(Deserialize, Debug, Clone)]
 pub struct TcsResponseZoneInstanceConfig {
     #[serde(rename = "RequestId")]
@@ -94,7 +88,6 @@ pub struct TcsResponseZoneInstanceConfig {
     pub instance_type_quota_set: Vec<TcsInstanceTypeQuota>,
 }
 
-// DNS 解析记录
 #[derive(Deserialize, Debug, Clone)]
 pub struct TcsInstanceTypeQuota {
     #[serde(rename = "Zone")]
@@ -125,7 +118,6 @@ pub struct TcsInstanceTypeQuota {
     pub price: TcsInstanceTypeQuotaPrice,
 }
 
-// DNS 解析记录
 #[derive(Deserialize, Debug, Clone)]
 pub struct TcsInstanceTypeQuotaPrice {
     #[serde(rename = "UnitPrice")]
@@ -138,7 +130,6 @@ pub struct TcsInstanceTypeQuotaPrice {
     pub charge_unit: String,
 }
 
-// DNS 解析记录
 #[derive(Deserialize, Debug, Clone)]
 pub struct TcsResponseDescribeInstanceStatus {
     #[serde(rename = "RequestId")]
@@ -149,7 +140,6 @@ pub struct TcsResponseDescribeInstanceStatus {
     pub instance_status_set: Vec<TcsInstanceStatus>,
 }
 
-// DNS 解析记录
 #[derive(Deserialize, Debug, Clone)]
 pub struct TcsInstanceStatus {
     #[serde(rename = "InstanceId")]
@@ -158,7 +148,6 @@ pub struct TcsInstanceStatus {
     pub instance_state: String,
 }
 
-// DNS 解析记录
 #[derive(Deserialize, Debug, Clone)]
 pub struct TcsResponseDescribeInstance {
     #[serde(rename = "RequestId")]
@@ -167,7 +156,6 @@ pub struct TcsResponseDescribeInstance {
     pub instance_set: Vec<TcsInstanceInfo>,
 }
 
-// DNS 解析记录
 #[derive(Deserialize, Debug, Clone)]
 pub struct TcsInstanceInfo {
     #[serde(rename = "InstanceId")]
@@ -200,7 +188,6 @@ pub struct TcsInstanceInfo {
     pub public_ip_addresses: Option<Vec<String>>,
 }
 
-// DNS 解析记录
 #[derive(Deserialize, Debug, Clone)]
 pub struct DiskInfo {
     #[serde(rename = "DiskType")]
