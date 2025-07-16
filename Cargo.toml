@@ -7,10 +7,7 @@ license = "MIT"
 repository = "https://gitlab.com/huangjj27/tls_sig_api"
 description = "Tencent Login Service Signature API (aka. TLSSigAPI)"
 
-include = [
-    "**/*.rs",
-    "Cargo.toml",
-]
+include = ["**/*.rs", "Cargo.toml"]
 
 [badges]
 gitlab = { repository = "https://gitlab.com/huangjj27/tls_sig_api", branch = "prod" }
@@ -25,9 +22,14 @@ serde_json = { version = "1.0.40", features = ["preserve_order"] }
 deflate = "0.8"
 chrono = "0.4"
 log = "0.4"
-reqwest = { version = "0.11.4", features = ["blocking", "gzip", "multipart", "json"] }
+reqwest = { version = "0.11.4", features = [
+    "blocking",
+    "gzip",
+    "multipart",
+    "json",
+] }
 
 [dev-dependencies]
-env_logger = "0.6"
+env_logger = "0.11.8"
 dotenv = "0.14"
 rand = "0.7"
