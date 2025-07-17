@@ -31,5 +31,5 @@ reqwest = { version = "0.11.4", features = [
 
 [dev-dependencies]
 env_logger = "0.11.8"
-dotenv = "0.14"
+dotenv = "0.15.0"
 rand = "0.7"
