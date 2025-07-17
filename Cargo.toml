@@ -22,7 +22,7 @@ serde_json = { version = "1.0.40", features = ["preserve_order"] }
 # deflate = "0.8"
 chrono = "0.4"
 log = "0.4"
-reqwest = { version = "0.11.4", features = [
+reqwest = { version = "0.12.22", features = [
     "blocking",
     "gzip",
     "multipart",
