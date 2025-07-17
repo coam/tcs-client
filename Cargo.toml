@@ -19,7 +19,7 @@ gitlab = { repository = "https://gitlab.com/huangjj27/tls_sig_api", branch = "pr
 ring = "0.16.19"
 serde = { version = "1.0.97", features = ["derive"] }
 serde_json = { version = "1.0.40", features = ["preserve_order"] }
-deflate = "0.8"
+# deflate = "0.8"
 chrono = "0.4"
 log = "0.4"
 reqwest = { version = "0.11.4", features = [
